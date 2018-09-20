@@ -102,6 +102,12 @@ extern struct timezone sys_tz;
 #define current_time(x)	(CURRENT_TIME_SEC)
 #endif
 
+#if LINUX_VERSION_CODE >= KERNEL_VERSION(4,18,0)
+#define timespec_compat timespec64
+#else
+#define timespec_compat timespec
+#endif
+
 #if LINUX_VERSION_CODE >= KERNEL_VERSION(4, 16, 0)
 #define USE_NEW_IVERSION_API
 #define INC_IVERSION(x) (inode_inc_iversion(x))
@@ -147,13 +153,8 @@ static time_t accum_days_in_year[] = {
 static void _exfat_truncate(struct inode *inode, loff_t old_size);
 
 /* Convert a FAT time/date pair to a UNIX date (seconds since 1 1 70). */
-#if LINUX_VERSION_CODE >= KERNEL_VERSION(4,18,01)
-void exfat_time_fat2unix(struct exfat_sb_info *sbi, struct timespec64 *ts,
+void exfat_time_fat2unix(struct exfat_sb_info *sbi, struct timespec_compat *ts,
 						 DATE_TIME_T *tp)
-#else
-void exfat_time_fat2unix(struct exfat_sb_info *sbi, struct timespec *ts,
-						 DATE_TIME_T *tp)
-#endif
 {
 	time_t year = tp->Year;
 	time_t ld;
@@ -171,13 +172,8 @@ void exfat_time_fat2unix(struct exfat_sb_info *sbi, struct timespec *ts,
 }
 
 /* Convert linear UNIX date to a FAT time/date pair. */
-#if LINUX_VERSION_CODE >= KERNEL_VERSION(4,18,01)
-void exfat_time_unix2fat(struct exfat_sb_info *sbi, struct timespec64 *ts,
+void exfat_time_unix2fat(struct exfat_sb_info *sbi, struct timespec_compat *ts,
 						 DATE_TIME_T *tp)
-#else
-void exfat_time_unix2fat(struct exfat_sb_info *sbi, struct timespec *ts,
-						 DATE_TIME_T *tp)
-#endif	
 {
 	time_t second = ts->tv_sec;
 	time_t day, month, year;
